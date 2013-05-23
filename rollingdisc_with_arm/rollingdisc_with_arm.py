@@ -1,7 +1,8 @@
 """Rolling disc with a trailing/leading skate attached by a massless arm."""
 
 from sympy import symbols, Matrix, solve, Poly, trigsimp, zeros
-from sympy.physics.mechanics import *
+from sympy.physics.mechanics import (cross, dot, dynamicsymbols, inertia,
+     ReferenceFrame, Point)
 
 # Symbols for time and constant parameters
 t, r, l, m, g, tau, F_friction = symbols('t r l m g tau F_friction')
@@ -69,15 +70,16 @@ Q = P.locatenew('Q', l*D.z)      # Arm mass center, arm-ground contact point
 
 # Velocity and acceleration of disc center
 P.set_vel(N, cross(C.ang_vel_in(N), P.pos_from(O)))
-P.set_acc(N, (P.vel(N).diff(t, B) + cross(B.ang_vel_in(N), P.vel(N))).subs(qdots))
+P.set_acc(N, (P.vel(N).diff(t, B)
+              + cross(B.ang_vel_in(N), P.vel(N))).subs(qdots))
 print("v_P_N = {0}".format(P.vel(N)))
-print("a_P_N = {0}".format(P.alike tocc(N)))
+print("a_P_N = {0}".format(P.acc(N)))
 
 # Velocity and acceleration of arm-ground contact point
 Q.v2pt_theory(P, N, D)
 Q.a2pt_theory(P, N, D)
 print("v_Q_N = {0}".format(Q.vel(N)))
-print("a_Q_N = {0}".formake tot(Q.acc(N)))
+print("a_Q_N = {0}".format(Q.acc(N)))
 
 # Configuration constraint
 f_c = dot(Q.pos_from(O), A.z)
@@ -168,7 +170,8 @@ print("Constrained generalized inertia forces:")
 for i, F_star_i in enumerate(F_star_constrained):
     print("F_star[{0}] = {1}".format(i, F_star_i))
 
-F_star_steady = [F_star_i.subs(ud_zero).subs(u_steady).expand().simplify() for F_star_i in F_star_constrained]
+F_star_steady = [F_star_i.subs(ud_zero).subs(u_steady).expand().simplify()
+                 for F_star_i in F_star_constrained]
 
 print("Constrained generalized inertia forces (steady):")
 for i, F_star_steady_i in enumerate(F_star_steady):
