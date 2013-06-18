@@ -1,4 +1,4 @@
-#For this one we assume massless links
+#For this one we assume RigidBody links
 from sympy import symbols,sympify
 from sympy.physics.mechanics import *
 
