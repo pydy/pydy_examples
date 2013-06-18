@@ -87,9 +87,9 @@ points_rigid_body = [P_link1,P_link2,P_link3]
 #Since links are rods, rotating axis= z-axis
 #Hence, xx = yy = (1/12)*m*l**2
 
-i0 = (1.0/12)*M[0]*l[0]**2
-i1 = (1.0/12)*M[1]*l[1]**2
-i2 = (1.0/12)*M[2]*l[2]**2
+i0 = (1.0/3)*M[0]*l[0]**2
+i1 = (1.0/3)*M[1]*l[1]**2
+i2 = (1.0/3)*M[2]*l[2]**2
 
 inertia_link1 = inertia(A,i0,i0,0)
 inertia_link2 = inertia(B,i1,i1,0)
