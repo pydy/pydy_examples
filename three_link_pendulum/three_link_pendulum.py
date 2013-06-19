@@ -1,4 +1,4 @@
-#For this one we assume massless links
+#For this one we assume RigidBody links
 from sympy import symbols,sympify
 from sympy.physics.mechanics import *
 
@@ -10,11 +10,14 @@ N_bobs = 3
 
 #Defining Dynamic Symbols ................
 
-#Generalized coordinates ...
-q = dynamicsymbols('q:' + str(N_bobs))    
+#Generalized coordinates(angular) ...
 
-#Generalized speeds ...
-u = dynamicsymbols('u:' + str(N_links + 1))
+alpha = dynamicsymbols('alpha1 alpha2 alpha3')
+beta = dynamicsymbols('beta1 beta2 beta3')    
+
+#Generalized speeds(angular) ...
+alphad = dynamicsymbols('alpha1 alpha2 alpha3',1)
+betad = dynamicsymbols('beta1 beta2 beta3',1)
 
 #Mass of each bob:
 m = symbols('m:'+str(N_bobs))
@@ -23,9 +26,9 @@ m = symbols('m:'+str(N_bobs))
 #Length and mass of each link ..
 l = symbols('l:' + str(N_links)) 
 M = symbols('M:' + str(N_links)) 
-#For storingInertia for each bob :
-i = symbols('i:'+str(N_bobs))
-
+#For storing Inertia for each link :
+Ixx = symbols('Ixx:'+str(N_links))
+Iyy = symbols('Iyy:'+str(N_links))
 
 #gravity and time ....
 g, t = symbols('g t')
@@ -35,16 +38,20 @@ g, t = symbols('g t')
 
 I = ReferenceFrame('I')
 
-#Getting more referenceframes for RigidBodies ...
+#And some other frames ...
 
-A = I.orientnew('A', 'Axis', [q[0], I.z])
-B = I.orientnew('B', 'Axis', [q[1], I.z])
-C = I.orientnew('C', 'Axis', [q[2], I.z])
+A = ReferenceFrame('A')
+A.orient(I,'Body',[alpha[0],beta[0],0],'ZXY')
+B = ReferenceFrame('B')
+B.orient(I,'Body',[alpha[1],beta[1],0],'ZXY')
+C = ReferenceFrame('C')
+C.orient(I,'Body',[alpha[2],beta[2],0],'ZXY')
+
 
 #Setting angular velocities of new frames ...
-A.set_ang_vel(I, u[0] * I.z)
-B.set_ang_vel(I, u[1] * I.z)
-C.set_ang_vel(I, u[2] * I.z)
+A.set_ang_vel(I, alphad[0] * I.z + betad[0] * I.x)
+B.set_ang_vel(I, alphad[1] * I.z + betad[1] * I.x)
+C.set_ang_vel(I, alphad[2] * I.z + betad[2] * I.x)
 
 
 
@@ -84,16 +91,10 @@ points_rigid_body = [P_link1,P_link2,P_link3]
 
 
 #defining inertia tensors for links
-#Since links are rods, rotating axis= z-axis
-#Hence, xx = yy = (1/12)*m*l**2
 
-i0 = (1.0/3)*M[0]*l[0]**2
-i1 = (1.0/3)*M[1]*l[1]**2
-i2 = (1.0/3)*M[2]*l[2]**2
-
-inertia_link1 = inertia(A,i0,i0,0)
-inertia_link2 = inertia(B,i1,i1,0)
-inertia_link3 = inertia(C,i2,i2,0)
+inertia_link1 = inertia(A,Ixx[0],Iyy[0],0)
+inertia_link2 = inertia(B,Ixx[1],Iyy[1],0)
+inertia_link3 = inertia(C,Ixx[2],Iyy[2],0)
 
 #Defining links as Rigid bodies ...
 
@@ -118,7 +119,8 @@ for link in links:
     forces.append((point, -mass * g * I.y) ) 
 kinetic_differentials = []
 for i in range(0,N_bobs):
-    kinetic_differentials.append(q[i].diff(t) - u[i])
+    kinetic_differentials.append(alphad[i] - alpha[i])
+    kinetic_differentials.append(betad[i] - beta[i])
 
 #Adding particles and links in the same system ...
 total_system = []
@@ -128,6 +130,20 @@ for particle in particles:
 for link in links:
     total_system.append(link)
 
+q = []
+for angle in alpha:
+	q.append(angle)
+for angle in beta:
+	q.append(angle)
+print q
+u = []
+
+for vel in alphad:
+	u.append(vel)
+for vel in betad:
+	u.append(vel)
+
+print u		
 kane = KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinetic_differentials)
 fr, frstar = kane.kanes_equations(forces, total_system)
 
