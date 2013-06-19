@@ -148,3 +148,10 @@ kane = KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinetic_differentials)
 fr, frstar = kane.kanes_equations(forces, total_system)
 
 print fr
+
+
+
+
+
+
+

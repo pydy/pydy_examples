@@ -1,4 +1,5 @@
-#For this one we assume RigidBody links
+#This program represents a hypothetical situation for a complete workflow
+#for simulating a three link pendulum with links as rigid bodies
 from sympy import symbols,sympify
 from sympy.physics.mechanics import *
 
@@ -23,9 +24,11 @@ betad = dynamicsymbols('beta1 beta2 beta3',1)
 m = symbols('m:'+str(N_bobs))
 
 
-#Length and mass of each link ..
+#Length mass and radii of each link(assuming as rods) ..
 l = symbols('l:' + str(N_links)) 
 M = symbols('M:' + str(N_links)) 
+radii = symbols('radii:' + str(N_links)) 
+
 #For storing Inertia for each link :
 Ixx = symbols('Ixx:'+str(N_links))
 Iyy = symbols('Iyy:'+str(N_links))
@@ -82,6 +85,7 @@ particles = [Pa1,Pa2,Pa3]
 P_link1 = O.locatenew('P_link1', l[0]/2 * A.y)
 P_link2 = O.locatenew('P_link1', l[1]/2 * B.y)
 P_link3 = O.locatenew('P_link1', l[2]/2 * C.y)
+
 #setting velocities of these points with v2pt theory ...
 P_link1.v2pt_theory(O, I, A)
 P_link2.v2pt_theory(P_link1, I, B)
@@ -104,6 +108,15 @@ link3 = RigidBody('link3', P_link3, C, M[2], (inertia_link3, P2))
 links = [link1,link2,link3]
 
 
+#Defining a basic shape for links ..
+rod1 = Cylinder(length=l[0],radii=radii[0])
+rod2 = Cylinder(length=l[1],radii=radii[1])
+rod3 = Cylinder(length=l[2],radii=radii[2])
+
+link1.shape(rod1)
+link2.shape(rod2)
+link3.shape(rod3)
+
 #Applying forces on all particles , and adding all forces in a list..
 forces = []
 for particle in particles:
@@ -117,6 +130,7 @@ for link in links:
     mass = link.get_mass()
     point = link.get_masscenter()
     forces.append((point, -mass * g * I.y) ) 
+
 kinetic_differentials = []
 for i in range(0,N_bobs):
     kinetic_differentials.append(alphad[i] - alpha[i])
@@ -148,3 +162,60 @@ kane = KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinetic_differentials)
 fr, frstar = kane.kanes_equations(forces, total_system)
 
 print fr
+
+#Now we have symbolic equations of motion. ..
+# we integrate them numerically. ..
+
+params = [g ,l1,l2,l3,m1,m2,m3,M1,M2,M3]
+
+param_vals = [9.8 ,1.0,1.0,1.0,2,2,2,5,5,5]
+
+right_hand_side = code_generator(kane,params)   
+
+#setting initial conditions ..
+init_conditions = [radians(45),radians(45),radians(30),\
+                   radians(30),radians(15),radians(15),\
+                           0,           0,         0,\
+                           0,           0,          0]
+t = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+
+numerical_vals = odeint(right_hand_side,init_conditions,t)
+
+#Now for each t, we have numerical vals of coordinates ..
+#Now we set up a visualization frame, 
+
+frame1 = VisualizationFrame('frame1',I,O)
+
+frame1.add_rigidbodies(links)
+
+frame1.add_particles(particles)
+
+param_vals_for_viz = {'g':9.8 ,'l1':1.0,'l2':1.0,'l3':1.0,'m1':2,'m2':2,'m3':2,'M1':5,'M1':5,'M1':5]
+
+json = frame1.generate_json(initial_conditions,q)
+#Here we can replace initial_conditions with the conditions at any 
+#specific time interval ....
+
+##This line does following things ...
+##calls RigidBody.transform_matrix() on all rigidbodies, 
+#so that we have info of rigidbodies(CoM,rotation,translation)
+# w.r.t VisualizationFrame('I' in this case) 
+##Even if they are defined in any other frame ....
+##calls point.set_pos() for all particles with arg 
+##as Point in VisualizationFrame(O here) ..
+##With these and init_conditions, we have a starting point of visualization ..
+
+scene = Scene()
+Scene.view(json)      # Just visualize/view the system at initial_conditions,
+                      #w.r.t VIsualizationFrame(I in this case) 
+                      # No simulation here. ..
+                      
+Scene.simulate(json,numerical_vals)  # modify the input json,
+									 #Add the values at different times from numerical_vals,
+									 #To the json, which is then passed to 
+									 #javascript
+									 #
+									 #(alpha1,alpha2,alpha3,beta1,beta2,beta3) at time=t 						 	
+
+
+
