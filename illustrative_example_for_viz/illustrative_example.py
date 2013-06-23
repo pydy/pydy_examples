@@ -1,6 +1,6 @@
 #This program represents a hypothetical situation for a complete workflow
 #for simulating a three link pendulum with links as rigid bodies
-from sympy import symbols,sympify
+from sympy import symbols, sympify
 from sympy.physics.mechanics import *
 
 #Number of links = 3
@@ -17,11 +17,11 @@ alpha = dynamicsymbols('alpha1 alpha2 alpha3')
 beta = dynamicsymbols('beta1 beta2 beta3')    
 
 #Generalized speeds(angular) ...
-alphad = dynamicsymbols('alpha1 alpha2 alpha3',1)
-betad = dynamicsymbols('beta1 beta2 beta3',1)
+vel_alpha = dynamicsymbols('vel_alpha1 vel_alpha2 vel_alpha3')
+vel_beta = dynamicsymbols('vel_beta1 vel_beta2 vel_beta3')
 
 #Mass of each bob:
-m = symbols('m:'+str(N_bobs))
+m = symbols('m:' + str(N_bobs))
 
 
 #Length mass and radii of each link(assuming as rods) ..
@@ -30,8 +30,12 @@ M = symbols('M:' + str(N_links))
 radii = symbols('radii:' + str(N_links)) 
 
 #For storing Inertia for each link :
-Ixx = symbols('Ixx:'+str(N_links))
-Iyy = symbols('Iyy:'+str(N_links))
+Ixx = symbols('Ixx:' + str(N_links))
+Iyy = symbols('Iyy:' + str(N_links))
+Izz = symbols('Izz:' + str(N_links))
+Ixy = symbols('Ixy:' + str(N_links))
+Iyz = symbols('Iyz:' + str(N_links))
+Ixz = symbols('Ixz:' + str(N_links))
 
 #gravity and time ....
 g, t = symbols('g t')
@@ -43,24 +47,21 @@ I = ReferenceFrame('I')
 
 #And some other frames ...
 
-A = ReferenceFrame('A')
-A.orient(I,'Body',[alpha[0],beta[0],0],'ZXY')
-B = ReferenceFrame('B')
-B.orient(I,'Body',[alpha[1],beta[1],0],'ZXY')
-C = ReferenceFrame('C')
-C.orient(I,'Body',[alpha[2],beta[2],0],'ZXY')
+A = I.orientnew('A', 'Body', [alpha[0], beta[0], 0], 'ZXY')
+B = A.orientnew('B', 'Body', [alpha[1], beta[1], 0], 'ZXY')
+C = B.orientnew('C', 'Body', [alpha[2], beta[2], 0], 'ZXY')
 
 
 #Setting angular velocities of new frames ...
-A.set_ang_vel(I, alphad[0] * I.z + betad[0] * I.x)
-B.set_ang_vel(I, alphad[1] * I.z + betad[1] * I.x)
-C.set_ang_vel(I, alphad[2] * I.z + betad[2] * I.x)
+A.set_ang_vel(I, vel_alpha[0] * I.z + vel_beta[0] * I.x)
+B.set_ang_vel(A, vel_alpha[1] * A.z + vel_beta[1] * A.x)
+C.set_ang_vel(B, vel_alpha[2] * B.z + vel_beta[2] * B.x)
 
 
 
 # An Origin point, with velocity = 0
 O = Point('O')
-O.set_vel(I,0)
+O.set_vel(I, 0)
 
 #Three more points, for masses ..
 P1 = O.locatenew('P1', l[0] * A.y)
@@ -71,12 +72,12 @@ P3 = O.locatenew('P3', l[2] * C.y)
 P1.v2pt_theory(O, I, A)
 P2.v2pt_theory(P1, I, B)
 P3.v2pt_theory(P2, I, C)
-points = [P1,P2,P3]
+points = [P1, P2, P3]
 
 Pa1 = Particle('Pa1', points[0], m[0])
 Pa2 = Particle('Pa2', points[1], m[1])
 Pa3 = Particle('Pa3', points[2], m[2])
-particles = [Pa1,Pa2,Pa3]
+particles = [Pa1, Pa2, Pa3]
 
 
 
@@ -91,14 +92,15 @@ P_link1.v2pt_theory(O, I, A)
 P_link2.v2pt_theory(P_link1, I, B)
 P_link3.v2pt_theory(P_link2, I, C)
 
-points_rigid_body = [P_link1,P_link2,P_link3]
+points_rigid_body = [P_link1, P_link2, P_link3]
 
 
 #defining inertia tensors for links
 
-inertia_link1 = inertia(A,Ixx[0],Iyy[0],0)
-inertia_link2 = inertia(B,Ixx[1],Iyy[1],0)
-inertia_link3 = inertia(C,Ixx[2],Iyy[2],0)
+
+inertia_link1 = inertia(A, Ixx[0], Iyy[0], Izz[0], ixy = Ixy[0], iyz = Iyz[0], izx = Ixz[0])
+inertia_link2 = inertia(B, Ixx[1], Iyy[1], Izz[1], ixy = Ixy[1], iyz = Iyz[1], izx = Ixz[1])
+inertia_link3 = inertia(C, Ixx[2], Iyy[2], Izz[2], ixy = Ixy[2], iyz = Iyz[2], izx = Ixz[2])
 
 #Defining links as Rigid bodies ...
 
@@ -109,9 +111,9 @@ links = [link1,link2,link3]
 
 
 #Defining a basic shape for links ..
-rod1 = Cylinder(length=l[0],radii=radii[0])
-rod2 = Cylinder(length=l[1],radii=radii[1])
-rod3 = Cylinder(length=l[2],radii=radii[2])
+rod1 = Cylinder(length = l[0], radii = radii[0])
+rod2 = Cylinder(length = l[1], radii = radii[1])
+rod3 = Cylinder(length = l[2], radii = radii[2])
 
 link1.shape(rod1)
 link2.shape(rod2)
@@ -133,8 +135,8 @@ for link in links:
 
 kinetic_differentials = []
 for i in range(0,N_bobs):
-    kinetic_differentials.append(alphad[i] - alpha[i])
-    kinetic_differentials.append(betad[i] - beta[i])
+    kinetic_differentials.append(vel_alpha[i] - alpha[i].diff(t))
+    kinetic_differentials.append(vel_betad[i] - beta[i].diff(t))
 
 #Adding particles and links in the same system ...
 total_system = []
@@ -146,19 +148,19 @@ for link in links:
 
 q = []
 for angle in alpha:
-	q.append(angle)
+    q.append(angle)
 for angle in beta:
-	q.append(angle)
+    q.append(angle)
 print q
 u = []
 
-for vel in alphad:
-	u.append(vel)
-for vel in betad:
-	u.append(vel)
+for vel in vel_alpha:
+    u.append(vel)
+for vel in vel_beta:
+    u.append(vel)
 
 print u		
-kane = KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinetic_differentials)
+kane = KanesMethod(I, q_ind=q, u_ind=u, kd_eqs = kinetic_differentials)
 fr, frstar = kane.kanes_equations(forces, total_system)
 
 print fr
@@ -166,9 +168,9 @@ print fr
 #Now we have symbolic equations of motion. ..
 # we integrate them numerically. ..
 
-params = [g ,l1,l2,l3,m1,m2,m3,M1,M2,M3]
+params = [g ,l1, l2, l3, m1, m2, m3, M1, M2, M3]
 
-param_vals = [9.8 ,1.0,1.0,1.0,2,2,2,5,5,5]
+param_vals = [9.8 ,1.0, 1.0, 1.0, 2, 2, 2, 5, 5, 5]
 
 right_hand_side = code_generator(kane,params)   
 
@@ -177,22 +179,24 @@ init_conditions = [radians(45),radians(45),radians(30),\
                    radians(30),radians(15),radians(15),\
                            0,           0,         0,\
                            0,           0,          0]
-t = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+t = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
-numerical_vals = odeint(right_hand_side,init_conditions,t)
+numerical_vals = odeint(right_hand_side, init_conditions, t)
 
 #Now for each t, we have numerical vals of coordinates ..
 #Now we set up a visualization frame, 
 
-frame1 = VisualizationFrame('frame1',I,O)
+frame1 = VisualizationFrame('frame1',I , O)
 
 frame1.add_rigidbodies(links)
 
 frame1.add_particles(particles)
 
-param_vals_for_viz = {'g':9.8 ,'l1':1.0,'l2':1.0,'l3':1.0,'m1':2,'m2':2,'m3':2,'M1':5,'M1':5,'M1':5]
+param_vals_for_viz = {'g':9.8, 'l1':1.0, 'l2':1.0, \
+                      'l3':1.0, 'm1':2, 'm2':2, 'm3':2, \
+                      'M1':5, 'M1':5, 'M1':5]
 
-json = frame1.generate_json(initial_conditions,q)
+json = frame1.generate_json(initial_conditions, q)
 #Here we can replace initial_conditions with the conditions at any 
 #specific time interval ....
 
@@ -210,7 +214,7 @@ Scene.view(json)      # Just visualize/view the system at initial_conditions,
                       #w.r.t VIsualizationFrame(I in this case) 
                       # No simulation here. ..
                       
-Scene.simulate(json,numerical_vals)  # modify the input json,
+Scene.simulate(json, numerical_vals)  # modify the input json,
 									 #Add the values at different times from numerical_vals,
 									 #To the json, which is then passed to 
 									 #javascript
