@@ -1,7 +1,8 @@
 #For this one we assume RigidBody links
 from sympy import symbols,sympify
 from sympy.physics.mechanics import *
-
+from code_gen import *
+from scipy.integrate import odeint
 #Number of links = 3
 N_links = 3
 
@@ -29,6 +30,7 @@ M = symbols('M:' + str(N_links))
 #For storing Inertia for each link :
 Ixx = symbols('Ixx:'+str(N_links))
 Iyy = symbols('Iyy:'+str(N_links))
+Izz = symbols('Izz:'+str(N_links))
 
 #gravity and time ....
 g, t = symbols('g t')
@@ -92,9 +94,9 @@ points_rigid_body = [P_link1,P_link2,P_link3]
 
 #defining inertia tensors for links
 
-inertia_link1 = inertia(A,Ixx[0],Iyy[0],0)
-inertia_link2 = inertia(B,Ixx[1],Iyy[1],0)
-inertia_link3 = inertia(C,Ixx[2],Iyy[2],0)
+inertia_link1 = inertia(A,Ixx[0],Iyy[0],Izz[0])
+inertia_link2 = inertia(B,Ixx[1],Iyy[1],Izz[1])
+inertia_link3 = inertia(C,Ixx[2],Iyy[2],Izz[2])
 
 #Defining links as Rigid bodies ...
 
@@ -135,22 +137,49 @@ for angle in alpha:
 	q.append(angle)
 for angle in beta:
 	q.append(angle)
-print q
-u = []
 
+u = []
 for vel in alphad:
 	u.append(vel)
 for vel in betad:
 	u.append(vel)
 
-print u		
+
 kane = KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinetic_differentials)
 fr, frstar = kane.kanes_equations(forces, total_system)
 
 print fr
 
+#Now we do numerical integration on the Kane object obtained ...
+params = []
+for lengths in l:
+    params.append(lengths)
+    
+for masses in m:
+    params.append(masses)
+    
+for masses in M:    
+    params.append(masses)
 
+for inertias in Ixx:
+    params.append(inertias)    
 
+for inertias in Iyy:
+    params.append(inertias)        
+    
+for inertias in Izz:
+    params.append(inertias)            
+params.append(g)
+
+print params
+
+right_hand_side = numeric_right_hand_side(kane, params)
+
+param_vals = [10, 10, 10, 5, 5, 5, 10, 10, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 9.8]
+t = [i*1 for i in range(0,10)]    #Taking 10 time intervals of 0.1 sec
+x0 = [45,45,45,45,45,45,0,0,0,0,0,0]
+numeric_vals = odeint(right_hand_side, x0, t, args=(param_vals,))
+print numeric_vals 
 
 
 
