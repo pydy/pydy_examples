@@ -81,7 +81,12 @@ class VisualizationFrame(object):
     def generate_simulation_data(self,values_list,timesteps=None):
         self.simulation_matrix = []
         for iterator in range(0,timesteps):
-            self.simulation_matrix.append(self._transform.evalf(subs=values_list[iterator]))
+            self.simulation_matrix.append(self._transform.evalf(subs=values_list[iterator]).tolist())
+            temp = self._transform.evalf(subs=values_list[iterator])
+            
+        print temp
+        print type(temp)    
+        print type(self.simulation_matrix)    
         return self.simulation_matrix
      
     def generate_simulation_dict(self):
@@ -124,7 +129,7 @@ class Scene():
             
             frame.transform(self._reference_frame,self._origin)
             frame.generate_simulation_data(values_list,timesteps=100)
-            self._scene_data['frames'][frame.__str__()] = frame.generate_simulation_dict()
+            self._scene_data['frames'][frame._name] = frame.generate_simulation_dict()
             
         return self._scene_data    
             

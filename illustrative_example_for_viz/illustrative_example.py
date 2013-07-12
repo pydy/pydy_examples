@@ -25,9 +25,9 @@ frame3 = VisualizationFrame('frame3', link3, shape=shape3)
 scene = Scene('scene1',I,O)
 scene.add_visualization_frame([frame1,frame2,frame3])
 data = scene.generate_json(values_list,timesteps=100)
-print data
 f = open('output','w')
 f.write(str(data))
 
-
+f = open('output1','w')
+f.write(json.dumps(data))
 
