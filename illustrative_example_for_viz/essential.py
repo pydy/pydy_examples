@@ -43,7 +43,13 @@ class MeshShape(object):
     @color.setter
     def origin(self, new_origin):
         self._origin = new_origin
-        
+    
+    def generate_data(self):
+        self._data = {}    
+        self._data['name'] = self.name
+        self._data['points'] = self.points
+        self._data['color'] = self.color
+        return self._data
        
 class VisualizationFrame(object):
     def __init__(self, name, rigidbody, shape=None):
@@ -77,27 +83,52 @@ class VisualizationFrame(object):
         for iterator in range(0,timesteps):
             self.simulation_matrix.append(self._transform.evalf(subs=values_list[iterator]))
         return self.simulation_matrix
+     
+    def generate_simulation_dict(self):
+        self._data = {}
+        self._data['name'] = self._name
+        
+        self._data['shape'] = {}
+        
+        self._data['shape'] = self._shape.generate_data() #hidden method
+        self._data['simulation_matrix'] = self.simulation_matrix
+        return self._data
         
 class Scene():
     def __init__(self,name,reference_frame,origin,height=800,width=800):
         self._name = name
         self._reference_frame=reference_frame        
         self._origin = origin  #contains point
-        self._child_vframes = []
+        self._child_frames = []
         self._height = height 
         self._width = width 
     
     
     def add_visualization_frames(self,vframes):
         for _vframe in vframes:
-            self._child_vframes.append(_vframe)    
+            self._child_frames.append(_vframe)    
     
     def add_visualization_frame(self,vframe):
-        self._child_vframes.append(vframe)
+        self._child_frames.append(vframe)
     
     
-    def generate_json(self):
+    def generate_json(self,values_list,timesteps=None):
         
-        #TODO
-        pass    
+        self._scene_data = {}
+        self._scene_data['name'] = self._name
+        self._scene_data['height'] = self._height
+        self._scene_data['width'] = self._width
+        self._scene_data['frames'] = {}
+        
+        for frame in self._child_frames[0]:
+            
+            frame.transform(self._reference_frame,self._origin)
+            frame.generate_simulation_data(values_list,timesteps=100)
+            self._scene_data['frames'][frame.__str__()] = frame.generate_simulation_dict()
+            
+        return self._scene_data    
+            
+            
+                
+       
     
