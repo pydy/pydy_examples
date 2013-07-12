@@ -3,6 +3,7 @@
 #It only contains the basic implementations of pydy-viz
 #also it doesnot check for TypeErrors etc.
 import numpy as np
+from sympy.matrices.expressions import Identity
 
 class MeshShape(object):
     def __init__(self, name, point_list, color='grey', origin=[0,0,0]):
@@ -52,20 +53,30 @@ class VisualizationFrame(object):
         self._reference_frame = rigidbody.get_frame()
         self._origin = rigidbody.get_masscenter()
         self._shape = shape
-        self._transform = np.eye(4)
+        self._transform = Identity(4).as_mutable()
         
-    def transform(self,rframe):
-        rotation_matrix = self._reference_frame.dcm(rframe)
-        self._transform[0:3,0:3] = rotation_matrix
+    def transform(self, reference_frame, point):
+        _rotation_matrix = self._reference_frame.dcm(reference_frame)
+        
+        self._transform[0:3,0:3] = _rotation_matrix[0:3,0:3]
+        
+        _point_vector = self._origin.pos_from(point).express(reference_frame)
+        
+        self._transform[0,3] = _point_vector.dot(reference_frame.x)
+        self._transform[1,3] = _point_vector.dot(reference_frame.y)
+        self._transform[2,3] = _point_vector.dot(reference_frame.z)
+        
         return self._transform
+        
+    def eval_transform(self):
+        self._numerical_transform = self._transform.evalf(subs=vel_dict)
+        return self._numerical_transform
 
-    def add_simulation_data(self,file_name=None):
-        #TODO
-        pass
-    
-    def generate_json():
-        #TODO
-        pass
+    def generate_simulation_data(self,values_list,timesteps=None):
+        self.simulation_matrix = []
+        for iterator in range(0,timesteps):
+            self.simulation_matrix.append(self._transform.evalf(subs=values_list[iterator]))
+        return self.simulation_matrix
         
 class Scene():
     def __init__(self,name,reference_frame,origin,height=800,width=800):
@@ -86,6 +97,7 @@ class Scene():
     
     
     def generate_json(self):
+        
         #TODO
         pass    
     

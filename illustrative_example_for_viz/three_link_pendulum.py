@@ -1,8 +1,8 @@
+
 #For this one we assume RigidBody links
 from sympy import symbols,sympify
 from sympy.physics.mechanics import *
-from code_gen import *
-from scipy.integrate import odeint
+
 #Number of links = 3
 N_links = 3
 
@@ -17,8 +17,8 @@ alpha = dynamicsymbols('alpha1 alpha2 alpha3')
 beta = dynamicsymbols('beta1 beta2 beta3')    
 
 #Generalized speeds(angular) ...
-alphad = dynamicsymbols('alpha1 alpha2 alpha3',1)
-betad = dynamicsymbols('beta1 beta2 beta3',1)
+omega = dynamicsymbols('omega1 omega2 omega3')
+delta = dynamicsymbols('delta1 delta2 delta3')
 
 #Mass of each bob:
 m = symbols('m:'+str(N_bobs))
@@ -51,9 +51,9 @@ C.orient(I,'Body',[alpha[2],beta[2],0],'ZXY')
 
 
 #Setting angular velocities of new frames ...
-A.set_ang_vel(I, alphad[0] * I.z + betad[0] * I.x)
-B.set_ang_vel(I, alphad[1] * I.z + betad[1] * I.x)
-C.set_ang_vel(I, alphad[2] * I.z + betad[2] * I.x)
+A.set_ang_vel(I, omega[0] * I.z + delta[0] * I.x)
+B.set_ang_vel(I, omega[1] * I.z + delta[1] * I.x)
+C.set_ang_vel(I, omega[2] * I.z + delta[2] * I.x)
 
 
 
@@ -119,10 +119,10 @@ for link in links:
     mass = link.get_mass()
     point = link.get_masscenter()
     forces.append((point, -mass * g * I.y) ) 
-kinetic_differentials = []
+kinematic_differentials = []
 for i in range(0,N_bobs):
-    kinetic_differentials.append(alphad[i] - alpha[i])
-    kinetic_differentials.append(betad[i] - beta[i])
+    kinematic_differentials.append(omega[i] - alpha[i].diff(t))
+    kinematic_differentials.append(delta[i] - beta[i].diff(t))
 
 #Adding particles and links in the same system ...
 total_system = []
@@ -139,47 +139,16 @@ for angle in beta:
 	q.append(angle)
 
 u = []
-for vel in alphad:
+for vel in omega:
 	u.append(vel)
-for vel in betad:
+for vel in delta:
 	u.append(vel)
 
 
-kane = KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinetic_differentials)
+kane = KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinematic_differentials)
 fr, frstar = kane.kanes_equations(forces, total_system)
 
 print fr
-
-#Now we do numerical integration on the Kane object obtained ...
-params = []
-for lengths in l:
-    params.append(lengths)
-    
-for masses in m:
-    params.append(masses)
-    
-for masses in M:    
-    params.append(masses)
-
-for inertias in Ixx:
-    params.append(inertias)    
-
-for inertias in Iyy:
-    params.append(inertias)        
-    
-for inertias in Izz:
-    params.append(inertias)            
-params.append(g)
-
-print params
-
-right_hand_side = numeric_right_hand_side(kane, params)
-
-param_vals = [10, 10, 10, 5, 5, 5, 10, 10, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 9.8]
-t = [i*1 for i in range(0,10)]    #Taking 10 time intervals of 0.1 sec
-x0 = [45,45,45,45,45,45,0,0,0,0,0,0]
-numeric_vals = odeint(right_hand_side, x0, t, args=(param_vals,))
-print numeric_vals 
 
 
 
