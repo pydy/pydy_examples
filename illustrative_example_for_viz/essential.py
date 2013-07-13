@@ -4,6 +4,7 @@
 #also it doesnot check for TypeErrors etc.
 import numpy as np
 from sympy.matrices.expressions import Identity
+from sympy import lambdify
 
 class MeshShape(object):
     def __init__(self, name, point_list, color='grey', origin=[0,0,0]):
@@ -74,19 +75,22 @@ class VisualizationFrame(object):
         
         return self._transform
         
-    def eval_transform(self):
-        self._numerical_transform = self._transform.evalf(subs=vel_dict)
-        return self._numerical_transform
-
-    def generate_simulation_data(self,values_list,timesteps=None):
+    def generate_simulation_data(self,values_list):
         self.simulation_matrix = []
-        for iterator in range(0,timesteps):
-            self.simulation_matrix.append(self._transform.evalf(subs=values_list[iterator]).tolist())
-            temp = self._transform.evalf(subs=values_list[iterator])
+        for vals in values_list:
+            evaluated = self._transform.evalf(subs=vals).tolist()
+            temp_list = []
+            for vals in evaluated:
+                temp_list1 = []
+                for val1 in vals:
+                    temp_list1.append(float(val1))
+                temp_list.append(temp_list1)    
+                
+            print 'evaluated = %s \n'%evaluated
             
-        print temp
-        print type(temp)    
-        print type(self.simulation_matrix)    
+            self.simulation_matrix.append(temp_list)
+        
+            
         return self.simulation_matrix
      
     def generate_simulation_dict(self):
@@ -117,7 +121,7 @@ class Scene():
         self._child_frames.append(vframe)
     
     
-    def generate_json(self,values_list,timesteps=None):
+    def generate_json(self,values_list):
         
         self._scene_data = {}
         self._scene_data['name'] = self._name
@@ -128,7 +132,7 @@ class Scene():
         for frame in self._child_frames[0]:
             
             frame.transform(self._reference_frame,self._origin)
-            frame.generate_simulation_data(values_list,timesteps=100)
+            frame.generate_simulation_data(values_list)
             self._scene_data['frames'][frame._name] = frame.generate_simulation_dict()
             
         return self._scene_data    

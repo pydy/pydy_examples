@@ -35,22 +35,22 @@ for inertias in Izz:
 params.append(g)
 param_vals.append(9.8)
 
+
 print params
 print param_vals
 right_hand_side = numeric_right_hand_side(kane, params)
 
-t = [i*0.1 for i in range(0,100)]    #Taking 10 time intervals of 0.1 sec
+t = [i*0.1 for i in range(0,10)]    #Taking 10 time intervals of 0.1 sec
 
 x0 = [radians(10), radians(10), radians(10), radians(10), radians(10), \
-                    radians(10), radians(10), 0, 0, 0, 0, 0]
+                    radians(10), 0, 0, 0, 0, 0, 0]
 
-numeric_vals = odeint(right_hand_side, x0, t, args=(param_vals,))
+numerical_vals = odeint(right_hand_side, x0, t, args=(param_vals,))
+#saving numerical vals as a dict:
 
-
-#mapping in a dict:
 values_list = []
 
-for val in numeric_vals:
+for val in numerical_vals:
     val_dict = {}
     val_dict[alpha[0]] = val[0]
     val_dict[alpha[1]] = val[1]
@@ -58,10 +58,12 @@ for val in numeric_vals:
     val_dict[beta[0]] = val[3]
     val_dict[beta[1]] = val[4]
     val_dict[beta[2]] = val[5]
-    #Since lengths are also used in defining some positions ...
+    
+    #lengths are also required in dict
+    
     val_dict[l[0]] = 10
     val_dict[l[1]] = 10
     val_dict[l[2]] = 10
     values_list.append(val_dict)
 
-print values_list[0]
+print values_list
