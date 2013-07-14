@@ -23,4 +23,6 @@ js  = open(os.path.join(path, filename)).read()
 def visualize(coordinate_time):
     #we will replace the data in the js_data file
     js_data = re.sub("#\(coordinates_time\)", str(coordinate_time),  js)
+    f = open('output.js','w')
+    f.write(js_data)
     display(Javascript(js_data))

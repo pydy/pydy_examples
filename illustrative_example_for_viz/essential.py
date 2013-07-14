@@ -46,7 +46,8 @@ class MeshShape(object):
         self._origin = new_origin
     
     def generate_data(self):
-        self._data = {}    
+        self._data = {}
+        self._data['type'] = 'Mesh'
         self._data['name'] = self.name
         self._data['points'] = self.points
         self._data['color'] = self.color

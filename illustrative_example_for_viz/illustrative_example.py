@@ -29,6 +29,6 @@ scene.add_visualization_frame([frame1,frame2,frame3])
 dynamic_params = alpha + beta + omega + delta
 data = scene.generate_json(values_list)
 
-f = open('output.json','w')
+f = open('js/output.json','w')
 f.write('var JSONObj=' + json.dumps(data) + ';')
 
