@@ -35,3 +35,4 @@ print json.dumps(data, indent=4, separators=(',', ': '))
 
 f.write('var JSONObj=' + json.dumps(data, indent=4, separators=(',', ': ')))
 
+scene.display()
