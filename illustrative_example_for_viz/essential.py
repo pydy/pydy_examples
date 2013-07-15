@@ -5,6 +5,7 @@
 import numpy as np
 from sympy.matrices.expressions import Identity
 from sympy import lambdify
+from server import *
 
 class Cylinder(object):
     def __init__(self, name, radius=1,height=1, color='grey'):
@@ -123,6 +124,13 @@ class Scene():
             
             
     def display(self):
+        print 'Your visualization is available at http://127.0.0.1/8000 \n \
+               Visit it in your favourite browser to see your visualization in \
+                   all its glory. \n \
+               Starting Server at 8000'
+        create_server(port=8000)
+        
+ 
         
         
        
