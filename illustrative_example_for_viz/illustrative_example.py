@@ -22,7 +22,7 @@ frame2 = VisualizationFrame('frame2', link2, shape=shape2)
 
 frame3 = VisualizationFrame('frame3', link3, shape=shape3)
 
-scene = Scene('scene1',I,O)
+scene = Scene('scene1',I,O,height=800,width=800)
 scene.add_visualization_frame([frame1,frame2,frame3])
 
 

@@ -89,7 +89,7 @@ class VisualizationFrame(object):
         return self._data
         
 class Scene():
-    def __init__(self,name,reference_frame,origin,height=800,width=800):
+    def __init__(self,name,reference_frame,origin,height=400,width=400):
         self._name = name
         self._reference_frame=reference_frame        
         self._origin = origin  #contains point

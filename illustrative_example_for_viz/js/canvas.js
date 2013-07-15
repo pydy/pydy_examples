@@ -20,7 +20,8 @@ function Canvas(JSONObj)
         // create a canvas div
 	    parent.canvas = $("#canvas");
         
-        parent.canvas.attr("style","background-color:rgb(104,104,104)");
+            parent.canvas.attr("style","background-color:rgb(104,104,104); height:"+this.height + ";width:"+this.width);
+
         
         // Now lets add a scene ..
         
@@ -116,24 +117,36 @@ function Canvas(JSONObj)
     {
         for(var frame in JSONObj.frames)
         {
-            parent.add_shape(JSONObj.frames[frame].shape)
+            parent.add_shape(JSONObj.frames[frame])
         }     
     }    
     
     
-    parent.add_shape = function(shape)
+    parent.add_shape = function(frame)
      {   
-         var material = new THREE.MeshBasicMaterial({
-            color:              shape.color,
+         var material = new THREE.MeshLambertMaterial({
+            color:              frame.shape.color,
             wireframe:          true,
-            wireframeLinewidth: 3
+            wireframeLinewidth: 0.1,
+            opacity: 0.5
            })
-         var geometry = new THREE.CylinderGeometry(shape.radius,shape.radius,shape.height,50,50);
+           
+         var geometry = new THREE.CylinderGeometry(frame.shape.radius,frame.shape.radius,frame.shape.height,50,50);
          var mesh = new THREE.Mesh(geometry,material);
-         parent.scene.add(mesh)
+         var init_orientation = frame.simulation_matrix[0];
+         var orienter = new THREE.Matrix4();
+         orienter.elements = [];
+         for(var i in init_orientation)
+             {
+               for(var j in init_orientation[i]) 
+               { 
+                  orienter.elements.push(init_orientation[i][j]) ;
+                }
+              }  
+         mesh.applyMatrix(orienter);
+         parent.scene.add(mesh);
          parent.renderer.render(parent.scene,parent.camera); 
-     }    
-                        
+      }                  
          
 }    
 
