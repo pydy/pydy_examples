@@ -6,14 +6,14 @@ from simulate import *
 import json
 #setting some shapes for the pendulums ..
 
-shape1 = MeshShape('shape1',[[1,1,1], [0,1,1], [2,1,1]], \
-                                color='red',origin=[0,0,0])
+shape1 = Cylinder('shape1',radius=2,height=10, \
+                                color='red')
 
-shape2 = MeshShape('shape2',[[1,1,1], [0,1,1], [2,1,1]], \
-                                color='blue',origin=[0,0,0])
+shape2 = Cylinder('shape2',radius=1,height=12, \
+                                color='blue')
                                 
-shape3 = MeshShape('shape3',[[1,1,1], [0,1,1], [2,1,1]], \
-                                color='green',origin=[0,0,0])
+shape3 = Cylinder('shape3',radius=3,height=7, \
+                                color='green')
 
 #Setting up some vframes ...
                                 
