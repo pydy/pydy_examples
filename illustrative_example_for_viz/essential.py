@@ -56,9 +56,9 @@ class VisualizationFrame(object):
         
         _point_vector = self._origin.pos_from(point).express(reference_frame)
         
-        self._transform[0,3] = _point_vector.dot(reference_frame.x)
-        self._transform[1,3] = _point_vector.dot(reference_frame.y)
-        self._transform[2,3] = _point_vector.dot(reference_frame.z)
+        self._transform[3,0] = _point_vector.dot(reference_frame.x)
+        self._transform[3,1] = _point_vector.dot(reference_frame.y)
+        self._transform[3,2] = _point_vector.dot(reference_frame.z)
         
         return self._transform
         

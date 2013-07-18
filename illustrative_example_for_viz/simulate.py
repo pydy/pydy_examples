@@ -40,7 +40,7 @@ print params
 print param_vals
 right_hand_side = numeric_right_hand_side(kane, params)
 
-t = [i*0.1 for i in range(0,10)]    #Taking 10 time intervals of 0.1 sec
+t = [i*0.1 for i in range(0,100)]    #Taking 10 time intervals of 0.1 sec
 
 x0 = [radians(10), radians(10), radians(10), radians(10), radians(10), \
                     radians(10), 0, 0, 0, 0, 0, 0]

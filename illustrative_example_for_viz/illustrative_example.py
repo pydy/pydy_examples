@@ -6,13 +6,13 @@ from simulate import *
 import json
 #setting some shapes for the pendulums ..
 
-shape1 = Cylinder('shape1',radius=2,height=10, \
+shape1 = Cylinder('shape1',radius=1,height=10, \
                                 color='red')
 
-shape2 = Cylinder('shape2',radius=1,height=12, \
+shape2 = Cylinder('shape2',radius=1,height=10, \
                                 color='blue')
                                 
-shape3 = Cylinder('shape3',radius=3,height=7, \
+shape3 = Cylinder('shape3',radius=1,height=10, \
                                 color='green')
 
 #Setting up some vframes ...
