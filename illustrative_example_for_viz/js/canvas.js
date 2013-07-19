@@ -6,6 +6,9 @@ function Canvas(JSONObj)
     this.width = JSONObj.width;
     this.height = JSONObj.height;
     var parent = this; // This is because of some tricky behaviour of Javascript "this" keyword
+    
+    parent.animation_counter = 0; // for counting and iterating over animation frames
+    parent.mesh_dict = {}; // for holding meshes as frame as dictionary key
     parent.initialize = function ()
         {
             
@@ -105,11 +108,11 @@ function Canvas(JSONObj)
         
     };
     
-    parent.animate = function()
+    parent.visualize = function()  // static visualization with mouse controls
     {
         parent.controls.update();
         parent.renderer.render(parent.scene, parent.camera);
-        requestAnimationFrame(parent.animate);
+        requestAnimationFrame(parent.visualize);
     };    
      
     parent.add_visualization_frames = function()
@@ -132,7 +135,7 @@ function Canvas(JSONObj)
            })
            
          var geometry = new THREE.CylinderGeometry(frame.shape.radius,frame.shape.radius,frame.shape.height,50,50);
-         var mesh = new THREE.Mesh(geometry,material);
+         parent.mesh_dict[frame] = new THREE.Mesh(geometry,material);
          var init_orientation = frame.simulation_matrix[0];
          var orienter = new THREE.Matrix4();
          orienter.elements = [];
@@ -143,11 +146,47 @@ function Canvas(JSONObj)
                   orienter.elements.push(init_orientation[i][j]) ;
                 }
               }  
-         mesh.applyMatrix(orienter);
-         parent.scene.add(mesh);
+         parent.mesh_dict[frame].applyMatrix(new THREE.Matrix4());
+         parent.mesh_dict[frame].applyMatrix(orienter);
+         parent.scene.add(parent.mesh_dict[frame]);
          parent.renderer.render(parent.scene,parent.camera); 
       }                  
          
+         
+    parent.animate = function()
+     {
+
+       for(var frame in JSONObj.frames) 
+             {
+              var matrix = JSONObj.frames[frame].simulation_matrix[parent.animation_counter];
+              var animation_matrix = new THREE.Matrix4();
+              animation_matrix.elements = [];
+              for(var i in matrix)
+                  {
+                    for(var j in matrix[i]) 
+                    { 
+                       animation_matrix.elements.push(matrix[i][j]) ;
+                     }
+                  }  
+             console.log(animation_matrix);
+             console.log(animation_matrix.elements);
+             // Making sure we are not applying matrix to the earlier transform
+                            
+             parent.mesh_dict[JSONObj.frames[frame]].applyMatrix(new THREE.Matrix4());   
+             // now applying transform, after setting to identity matrix ...
+             parent.mesh_dict[JSONObj.frames[frame]].applyMatrix(animation_matrix);                  
+             }    
+             
+         console.log(parent.animation_counter);    
+         //update timestep ...
+         parent.animation_counter++;
+         // This is to loop over again and again ...
+         if(parent.animation_counter == 10){ parent.animation_counter = 0; }
+         
+         requestAnimationFrame(parent.animate);
+     
+     }
+          
 }    
 
 
