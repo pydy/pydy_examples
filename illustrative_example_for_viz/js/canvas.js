@@ -6,9 +6,10 @@ function Canvas(JSONObj)
     this.width = JSONObj.width;
     this.height = JSONObj.height;
     var parent = this; // This is because of some tricky behaviour of Javascript "this" keyword
-    
-    parent.animation_counter = 0; // for counting and iterating over animation frames
-    parent.mesh_dict = {}; // for holding meshes as frame as dictionary key
+    parent.init_canvas = new THREE.Object3D(); // This consists of axes and other init stuff
+    parent.animation_counter = 0; // for counting and iterating
+    parent.mesh_dict = {}; // for holding meshes as frame as dictionary key 
+    parent.i = 0;
     parent.initialize = function ()
         {
             
@@ -17,13 +18,14 @@ function Canvas(JSONObj)
         // first of all , a renderer ...
 	    parent.renderer = new THREE.WebGLRenderer();
         
-        //show the IPython handle container
+        
         
     
         // create a canvas div
 	    parent.canvas = $("#canvas");
         
-            parent.canvas.attr("style","background-color:rgb(104,104,104); height:"+this.height + ";width:"+this.width);
+        parent.canvas.attr("style","background-color:rgb(104,104,104); height:"+this.height + ";width:"+this.width);
+
 
         
         // Now lets add a scene ..
@@ -68,65 +70,70 @@ function Canvas(JSONObj)
          // Add Axis to parent scene ...
          // Add  axes ...
 	
-	    var axesMaterial = new THREE.MeshLambertMaterial(
-	    {
+        var axesMaterial = new THREE.MeshLambertMaterial(
+	     {
 	        color: 0xFFFFFF
 	    
-	    });
-       parent.x_axis = new THREE.Mesh(
-	                      new THREE.CubeGeometry(parent.width, 0.05, 0.05),
+	     });
+        parent.x_axis = new THREE.Mesh(
+	                      new THREE.CubeGeometry(parent.width, 0.1, 0.1),
 	                         axesMaterial);
 	   
-	    parent.scene.add(parent.x_axis);
+	    parent.init_canvas.add(parent.x_axis);
         
         parent.y_axis = new THREE.Mesh(
-	                  new THREE.CubeGeometry(0.05, parent.height, 0.05),
+	                  new THREE.CubeGeometry(0.1, parent.height, 0.1),
 	                                 axesMaterial);
 	   
-	    parent.scene.add(parent.y_axis); 
+	    parent.init_canvas.add(parent.y_axis);
         
         parent.z_axis = new THREE.Mesh(
-	                 new THREE.CubeGeometry(0.05, 0.05, 10),
+	                 new THREE.CubeGeometry(0.1, 0.1, 10),
 	                      axesMaterial);
 	   
-	    parent.scene.add(parent.z_axis);
+	    parent.init_canvas.add(parent.z_axis);
         
         // create a point light
 	    parent.pointLight = new THREE.PointLight( 0xFFFFFF );
 
 	    // set its position
-	   parent.pointLight.position.x = 100;
-	   parent.pointLight.position.y = 100;
-       parent.pointLight.position.z = 100;
+	    parent.pointLight.position.x = 10;
+	    parent.pointLight.position.y = 10;
+        parent.pointLight.position.z = 10;
 
 	    // add to the scene
-	    parent.scene.add(parent.pointLight);
+	    parent.init_canvas.add(parent.pointLight);
 	
+        parent.scene.add(parent.init_canvas);
 	    parent.renderer.render(parent.scene, parent.camera);    
         
         
         
     };
     
-    parent.visualize = function()  // static visualization with mouse controls
+    parent.visualize = function()
     {
+        
         parent.controls.update();
+        
         parent.renderer.render(parent.scene, parent.camera);
         requestAnimationFrame(parent.visualize);
     };    
      
     parent.add_visualization_frames = function()
     
-    {
+    {   parent.frames = {};
         for(var frame in JSONObj.frames)
         {
             parent.add_shape(JSONObj.frames[frame])
+            
         }     
     }    
     
     
     parent.add_shape = function(frame)
      {   
+         
          var material = new THREE.MeshLambertMaterial({
             color:              frame.shape.color,
             wireframe:          true,
@@ -135,7 +142,7 @@ function Canvas(JSONObj)
            })
            
          var geometry = new THREE.CylinderGeometry(frame.shape.radius,frame.shape.radius,frame.shape.height,50,50);
-         parent.mesh_dict[frame] = new THREE.Mesh(geometry,material);
+         parent.mesh_dict[frame.name] = new THREE.Mesh(geometry,material);
          var init_orientation = frame.simulation_matrix[0];
          var orienter = new THREE.Matrix4();
          orienter.elements = [];
@@ -146,53 +153,53 @@ function Canvas(JSONObj)
                   orienter.elements.push(init_orientation[i][j]) ;
                 }
               }  
-         parent.mesh_dict[frame].applyMatrix(new THREE.Matrix4());
-         parent.mesh_dict[frame].applyMatrix(orienter);
-         parent.scene.add(parent.mesh_dict[frame]);
+         parent.mesh_dict[frame.name].applyMatrix(new THREE.Matrix4());
+         parent.mesh_dict[frame.name].applyMatrix(orienter);
+         parent.mesh_dict[frame.name].autoUpdateMatrix = false;
+         parent.scene.add(parent.mesh_dict[frame.name]);
          parent.renderer.render(parent.scene,parent.camera); 
-      }                  
-         
-         
-    parent.animate = function()
+     }    
+                        
+     parent.run_animation = function()
      {
-
-       for(var frame in JSONObj.frames) 
-             {
-              var matrix = JSONObj.frames[frame].simulation_matrix[parent.animation_counter];
-              var animation_matrix = new THREE.Matrix4();
-              animation_matrix.elements = [];
-              for(var i in matrix)
+              
+              
+              //Please work
+              parent.animate(JSONObj.frames[0], parent.i);
+              parent.animate(JSONObj.frames[1], parent.i);
+              parent.animate(JSONObj.frames[2], parent.i);
+              
+              parent.i++;
+              if(parent.i >= 100) { parent.i = 0; }    
+              console.log(parent.i);
+              requestAnimationFrame(parent.run_animation); 
+          
+              
+             
+      }
+      
+      
+      parent.animate = function(frame, counter)
+      {
+          var matrix = frame.simulation_matrix[counter]; 
+          var orienter = new THREE.Matrix4();
+          orienter.elements = [];
+          for(var i in matrix)
                   {
                     for(var j in matrix[i]) 
                     { 
-                       animation_matrix.elements.push(matrix[i][j]) ;
+                       orienter.elements.push(matrix[i][j]) ;
                      }
                   }  
-             console.log(animation_matrix);
-             console.log(animation_matrix.elements);
-             // Making sure we are not applying matrix to the earlier transform
-                            
-             parent.mesh_dict[JSONObj.frames[frame]].applyMatrix(new THREE.Matrix4());   
-             // now applying transform, after setting to identity matrix ...
-             parent.mesh_dict[JSONObj.frames[frame]].applyMatrix(animation_matrix);                  
-             }    
-             
-         console.log(parent.animation_counter);    
-         //update timestep ...
-         parent.animation_counter++;
-         // This is to loop over again and again ...
-         if(parent.animation_counter == 10){ parent.animation_counter = 0; }
-         
-         requestAnimationFrame(parent.animate);
-     
-     }
+              
+          // Removing the chaos, bringing heirarchy ..    
+          parent.mesh_dict[frame.name].matrix.identity();
+          parent.mesh_dict[frame.name].applyMatrix(orienter);   
           
-}    
-
-
-
-
-
-    
-    
-    
+       }    
+       
+      
+            
+       
+     
+}
