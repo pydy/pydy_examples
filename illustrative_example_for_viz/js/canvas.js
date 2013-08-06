@@ -170,7 +170,7 @@ function Canvas(JSONObj)
               parent.animate(JSONObj.frames[2], parent.i);
               
               parent.i++;
-              if(parent.i >= 100) { parent.i = 0; }    
+              if(parent.i >= 1000) { parent.i = 0; }    
               console.log(parent.i);
               requestAnimationFrame(parent.run_animation); 
           
