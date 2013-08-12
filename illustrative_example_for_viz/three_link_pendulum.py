@@ -74,9 +74,9 @@ particles = [Pa1, Pa2, Pa3]
 
 #defining points for links(RigidBodies)
 #Assuming CoM as l/2 ...
-P_link1 = O.locatenew('P_link1', -l[0] / 2 * A.y)
-P_link2 = P_link1.locatenew('P_link2', -l[1] / 2 * B.y)
-P_link3 = P_link2.locatenew('P_link3', -l[2] / 2 * C.y)
+P_link1 = O.locatenew('P_link1', -l[0] * A.y)
+P_link2 = P_link1.locatenew('P_link2', -l[1]  * B.y)
+P_link3 = P_link2.locatenew('P_link3', -l[2]  * C.y)
 
 #setting velocities of these points with v2pt theory ...
 P_link1.v2pt_theory(O, I, A)
