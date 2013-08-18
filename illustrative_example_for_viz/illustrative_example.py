@@ -26,6 +26,3 @@ data = scene.generate_visualization_dict(kane._q + kane._u, params, states, para
 scene.generate_visualization_json(kane._q + kane._u, params, states, param_vals)
 print('Done.')
 scene.display()
-
-
-
