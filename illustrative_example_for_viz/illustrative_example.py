@@ -4,7 +4,7 @@
 from three_link_pendulum import I, O, link1, link2, link3, kane
 from simulate import params, states, param_vals
 import json
-from pydy_viz.shapes import *
+from pydy_viz.shapes import Cylinder
 from pydy_viz.scene import Scene
 from pydy_viz.visualization_frame import VisualizationFrame
 from pydy_viz.server import Server
