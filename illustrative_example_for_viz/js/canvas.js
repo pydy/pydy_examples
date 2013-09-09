@@ -198,8 +198,4 @@ function Canvas(JSONObj)
           
        }    
        
-      
-            
-       
-     
 }
