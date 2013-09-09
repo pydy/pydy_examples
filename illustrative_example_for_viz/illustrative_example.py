@@ -1,29 +1,35 @@
 #Export method calls and namespace
 # from three_link_pendulum example ..
 
-from three_link_pendulum import I, O, link1, link2, link3, kane
-from simulate import params, states, param_vals
-import json
-from pydy_viz.shapes import Cylinder
+from three_link_pendulum import I, O, links, particles, kane
+from simulate import params, states, param_vals,
+from simulate import link_length, link_radius, particle_radius
+from pydy_viz.shapes import Cylinder, Sphere
 from pydy_viz.scene import Scene
 from pydy_viz.visualization_frame import VisualizationFrame
-from pydy_viz.server import Server
-# setting some shapes for the pendulums ..
-shape1 = Cylinder('shape1', radius=1.0, length=10.0, color='red')
-shape2 = Cylinder('shape2', radius=1.0, length=10.0, color='blue')
-shape3 = Cylinder('shape3', radius=1.0, length=10.0, color='green')
 
-# setting up some vframes ...
-frame1 = VisualizationFrame('frame1', link1, shape1)
-frame2 = VisualizationFrame('frame2', link2, shape2)
-frame3 = VisualizationFrame('frame3', link3, shape3)
+viz_frames = []
 
-scene = Scene(I, O, frame1, frame2, frame3)
-scene.visualization_frames = [frame1, frame2, frame3]
+for i, (link, particle) in enumerate(zip(links, particles)):
+
+    link_shape = Cylinder('cylinder{}'.format(i), radius=link_radius,
+                          length=link_length, color='red')
+    viz_frames.append(VisualizationFrame('link_frame{}'.format(i), link,
+                                         link_shape))
+
+    particle_shape = Sphere('sphere{}'.format(i), radius=particle_radius,
+                            color='blue')
+    viz_frames.append(VisualizationFrame('particle_frame{}'.format(i),
+                                         link.frame, particle,
+                                         particle_shape))
+
+scene = Scene(I, O, *viz_frames)
+#scene.visualization_frames = viz_frames
 
 print('Generating transform time histories.')
-data = scene.generate_visualization_dict(kane._q + kane._u, params, states, param_vals)
-scene.generate_visualization_json(kane._q + kane._u, params, states, param_vals)
+data = scene.generate_visualization_dict(kane._q + kane._u, params, states,
+                                         param_vals)
+scene.generate_visualization_json(kane._q + kane._u, params, states,
+                                  param_vals)
 print('Done.')
-print data
 scene.display()
