@@ -2,7 +2,7 @@
 # from three_link_pendulum example ..
 
 from three_link_pendulum import I, O, links, particles, kane
-from simulate import params, states, param_vals,
+from simulate import params, states, param_vals
 from simulate import link_length, link_radius, particle_radius
 from pydy_viz.shapes import Cylinder, Sphere
 from pydy_viz.scene import Scene
