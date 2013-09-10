@@ -24,7 +24,6 @@ for i, (link, particle) in enumerate(zip(links, particles)):
                                          particle_shape))
 
 scene = Scene(I, O, *viz_frames)
-#scene.visualization_frames = viz_frames
 
 print('Generating transform time histories.')
 data = scene.generate_visualization_dict(kane._q + kane._u, params, states,
