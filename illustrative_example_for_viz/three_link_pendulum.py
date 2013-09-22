@@ -13,12 +13,12 @@ N_bobs = 3
 
 #Generalized coordinates(angular) ...
 
-alpha = me.dynamicsymbols('alpha1 alpha2 alpha3')
-beta = me.dynamicsymbols('beta1 beta2 beta3')
+alpha = me.dynamicsymbols('alpha:{}'.format(N_links))
+beta = me.dynamicsymbols('beta:{}'.format(N_links))
 
 #Generalized speeds(angular) ...
-omega = me.dynamicsymbols('omega1 omega2 omega3')
-delta = me.dynamicsymbols('delta1 delta2 delta3')
+omega = me.dynamicsymbols('omega:{}'.format(N_links))
+delta = me.dynamicsymbols('delta:{}'.format(N_links))
 
 #Mass of each bob:
 m = symbols('m:' + str(N_bobs))
@@ -58,8 +58,8 @@ O.set_vel(I, 0)
 
 #Three more points, for masses ..
 P1 = O.locatenew('P1', -l[0] * A.y)
-P2 = O.locatenew('P2', -l[1] * B.y)
-P3 = O.locatenew('P3', -l[2] * C.y)
+P2 = P1.locatenew('P2', -l[1] * B.y)
+P3 = P2.locatenew('P3', -l[2] * C.y)
 
 #Setting velocities of points with v2pt theory ...
 P1.v2pt_theory(O, I, A)
@@ -74,17 +74,16 @@ particles = [Pa1, Pa2, Pa3]
 
 #defining points for links(RigidBodies)
 #Assuming CoM as l/2 ...
-P_link1 = O.locatenew('P_link1', -l[0] * A.y)
-P_link2 = P_link1.locatenew('P_link2', -l[1]  * B.y)
-P_link3 = P_link2.locatenew('P_link3', -l[2]  * C.y)
+P_link1 = O.locatenew('P_link1', -l[0] / 2 * A.y)
+P_link2 = P1.locatenew('P_link2', -l[1] / 2 * B.y)
+P_link3 = P2.locatenew('P_link3', -l[2] / 2 * C.y)
 
 #setting velocities of these points with v2pt theory ...
 P_link1.v2pt_theory(O, I, A)
-P_link2.v2pt_theory(P_link1, I, B)
-P_link3.v2pt_theory(P_link2, I, C)
+P_link2.v2pt_theory(P1, I, B)
+P_link3.v2pt_theory(P2, I, C)
 
 points_rigid_body = [P_link1, P_link2, P_link3]
-
 
 #defining inertia tensors for links
 
@@ -98,7 +97,6 @@ link1 = me.RigidBody('link1', P_link1, A, M[0], (inertia_link1, P_link1))
 link2 = me.RigidBody('link2', P_link2, B, M[1], (inertia_link2, P_link2))
 link3 = me.RigidBody('link3', P_link3, C, M[2], (inertia_link3, P_link3))
 links = [link1, link2, link3]
-
 
 #Applying forces on all particles , and adding all forces in a list..
 forces = []
@@ -128,5 +126,4 @@ u = omega + delta
 print("Generating equations of motion.")
 kane = me.KanesMethod(I, q_ind=q, u_ind=u, kd_eqs=kinematic_differentials)
 fr, frstar = kane.kanes_equations(forces, total_system)
-
 print("Derivation complete.")
