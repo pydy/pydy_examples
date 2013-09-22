@@ -25,5 +25,5 @@ print('Generating transform time histories.')
 data = scene.generate_visualization_dict(kane._q + kane._u, params, states, param_vals)
 scene.generate_visualization_json(kane._q + kane._u, params, states, param_vals)
 print('Done.')
-print data
+#print data
 scene.display()

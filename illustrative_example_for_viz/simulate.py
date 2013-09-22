@@ -16,11 +16,9 @@ right_hand_side = numeric_right_hand_side(kane, params)
 
 print("Integrating equations of motion.")
 
-t = linspace(0.0, 10.0, num=100)
+t =  linspace(0.0, 10.0, num=100)
 x0 = hstack((ones(6) * radians(10.0), zeros(6)))
 states = odeint(right_hand_side, x0, t, args=(param_vals,))
 
 print("Integration done.")
-print type(states)
-print states.shape
-print type(states.shape)
+
