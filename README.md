@@ -1,3 +1,9 @@
+**Notice**
+
+**pydy_examples has been merged into the main pydy repository. This independent
+project is now deprecated, all development and subsequent releases will be from
+http://github.com/pydy/pydy.**
+
 These are examples of using the various tools in PyDy to simulate and study the
 motion of classical dynamic systems. The equations of motion for the systems
 are typically derived with SymPy Mechanics and the numerical work done with a
